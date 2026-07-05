@@ -48,6 +48,13 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * --primary/--ring/--accent carry a deliberate violet hue (light and dark) in
+ * place of shadcn's grayscale defaults, so this doesn't read as an unmodified
+ * starter theme. amber/emerald/red stay untouched everywhere else: those
+ * carry real meaning (caution/trust/danger) that shouldn't compete with a
+ * brand color.
+ */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

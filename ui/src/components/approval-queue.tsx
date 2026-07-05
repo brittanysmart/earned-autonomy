@@ -149,6 +149,9 @@ function QueueItem({
   }
 
   const criterion = criterionInfo(flag.criterion);
+  // Resolve state gets a settle animation and a felt outcome, not points or
+  // a streak counter. Approving a flag is a real trust decision here, not a
+  // low-stakes tap to farm — the feedback should feel earned, not gamified.
   const resolved = flag.status !== "pending";
 
   return (
