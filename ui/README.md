@@ -1,6 +1,6 @@
 # Approval Queue UI
 
-The frontend half of [design-audit](../README.md) — a Next.js + shadcn/ui app that reads
+The frontend half of [earned-autonomy](../README.md) — a Next.js + shadcn/ui app that reads
 `../output/flags.json` and renders each flag as a queue item: component, source, criterion,
 severity, confidence, evidence, and a proposed action. Approve / Reject / Edit controls per
 item write decisions to `../output/decisions.json`; nothing executes until a human clicks.
