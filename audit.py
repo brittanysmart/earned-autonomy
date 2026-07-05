@@ -74,13 +74,13 @@ def check_judgment_boundaries(doc):
     flags = []
     if doc["role"] == "official":
         pattern = r'no .{0,10}when to use.{0,150}(exists|guidance)'
-        if re.search(pattern, body, re.I):
+        if re.search(pattern, body, re.I | re.DOTALL):
             flags.append(flag(
                 doc["component"], doc["meta"].get("source", "unknown"), "judgment_boundaries",
                 severity="high", confidence=95,
-                summary=f"Official docs for '{doc['component']}' contain no when-to-use / when-not-to-use guidance.",
-                evidence=_first_match(body, r'.{0,60}' + pattern + r'.{0,80}'),
-                recommended_action="Flag for doc owner: add judgment-boundary section before agents cite this page as authoritative usage guidance.",
+                summary=f"The official '{doc['component']}' docs never say when you should (or shouldn't) use it.",
+                evidence=_first_sentence(body, pattern),
+                recommended_action="Ask the doc owner to add a \"when to use this\" section — right now an agent citing this page has no guardrails.",
             ))
     else:
         # Mirror sources sometimes DO contain judgment guidance the official docs lack —
@@ -91,9 +91,9 @@ def check_judgment_boundaries(doc):
             flags.append(flag(
                 doc["component"], doc["meta"].get("source", "unknown"), "judgment_boundaries",
                 severity="medium", confidence=80,
-                summary=f"Unofficial mirror contains judgment guidance for '{doc['component']}' that does not exist in official docs.",
+                summary=f"This unofficial copy of the docs gives usage advice for '{doc['component']}' that the official docs never mention.",
                 evidence=_first_match(body, r'#[^\n]*\n\n(.{1,350}?)\n\n', flags_extra=re.DOTALL),
-                recommended_action="Flag for doc owner: either fold this guidance into official docs (if correct) or note it's unendorsed opinion (if not).",
+                recommended_action="Either add this advice to the official docs (if it's right), or label it an unofficial opinion (if it's not).",
             ))
     return flags
 
@@ -102,13 +102,13 @@ def check_terminology_consistency(doc):
     flags = []
     body = doc["body"]
     if re.search(r'unsourced terminology|taxonomy (substitution|inconsistency|drift)', body, re.I):
-        note = _first_match(body, r'(Note|This (?:source|port|page)).{0,350}')
+        note = _first_sentence(body, r'Note:|This (?:source|port|page)')
         flags.append(flag(
             doc["component"], doc["meta"].get("source", "unknown"), "terminology_consistency",
             severity="medium", confidence=88,
-            summary=f"Terminology or taxonomy mismatch detected for '{doc['component']}' relative to official docs.",
+            summary=f"This unofficial copy uses different names or variants for '{doc['component']}' than the official docs do.",
             evidence=note,
-            recommended_action="Flag for doc owner: reconcile naming/taxonomy or add explicit mapping between mirror and official terms.",
+            recommended_action="Ask the doc owner to line up the naming — either fix the mismatch or add a note mapping one to the other.",
         ))
     return flags
 
@@ -122,9 +122,9 @@ def check_staleness_drift(doc):
         flags.append(flag(
             doc["component"], meta.get("source", "unknown"), "staleness_drift",
             severity="low", confidence=60,
-            summary=f"Mirror source for '{doc['component']}' has no version/date markers to check against official docs' change history.",
+            summary=f"This unofficial copy doesn't say when it was last updated, so there's no way to tell if it's stale.",
             evidence="No 'Updated:', changelog, or version-specific note found in this source.",
-            recommended_action="Low confidence — needs a human to check the mirror's actual last-edit date before flagging as stale.",
+            recommended_action="Low confidence — a person should check this copy's real last-updated date before calling this stale.",
         ))
     return flags
 
@@ -139,16 +139,33 @@ def check_retrievability(doc):
             doc["component"], doc["meta"].get("source", "unknown"), "retrievability",
             severity="medium" if doc["role"] == "official" else "low",
             confidence=92 if doc["role"] == "official" else 70,
-            summary=f"'{doc['component']}' source at {doc['meta'].get('source','unknown')} has no structured prop/type/default table.",
+            summary=f"This page has no prop/type/default table, so a tool can't reliably pull '{doc['component']}'s API from it.",
             evidence="No API reference table found in document body.",
-            recommended_action="Flag for retrievability: an agent querying this source can't reliably extract prop contracts without one.",
+            recommended_action="Add a prop/type/default table — without one, an agent reading this page can't reliably learn the API.",
         ))
     return flags
 
 
 def _first_match(body, pattern, flags_extra=0):
-    m = re.search(pattern, body, re.I | flags_extra)
+    m = re.search(pattern, body, re.I | re.DOTALL | flags_extra)
     return re.sub(r"\s+", " ", m.group(0)).strip() if m else ""
+
+
+def _first_sentence(body, pattern):
+    # Expands a match to its full surrounding sentence instead of a fixed
+    # character window — a fixed window can land mid-word at either end
+    # whenever the source markdown happens to line-wrap nearby, which reads
+    # as a bug in the evidence quote rather than an intentional excerpt.
+    text = re.sub(r"\s+", " ", body)
+    m = re.search(pattern, text, re.I)
+    if not m:
+        return ""
+    start, end = m.start(), m.end()
+    sent_start = text.rfind(". ", 0, start)
+    sent_start = sent_start + 2 if sent_start != -1 else 0
+    sent_end = text.find(". ", end)
+    sent_end = sent_end + 1 if sent_end != -1 else len(text)
+    return text[sent_start:sent_end].strip()
 
 
 def run():
