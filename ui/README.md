@@ -7,14 +7,16 @@ item write decisions to `../output/decisions.json`; nothing executes until a hum
 
 ## Run it
 
-Requires `../output/flags.json` to exist first — generate it with `python3 ../audit.py`.
+From the repo root, `./demo.sh` regenerates the data and starts this app in one step. To run
+just the UI on its own:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+`predev` runs `python3 ../audit.py` automatically first, so `output/flags.json` is always
+current. Open [http://localhost:3000](http://localhost:3000).
 
 ## Notes
 
@@ -22,4 +24,6 @@ Open [http://localhost:3000](http://localhost:3000).
   The one write path is the `recordDecision` server action in `src/app/actions.ts`, which
   appends to `output/decisions.json` — a real file you can inspect directly to confirm the
   audit trail isn't just UI state.
-- This app is designed to run locally, not deployed — see the root repo's project notes for why.
+- This app is designed to run locally, not deployed: it reads and writes plain files on disk
+  (`output/flags.json`, `output/decisions.json`), which is what makes the audit trail
+  directly inspectable — there's no hosted backend or database behind it.
