@@ -7,6 +7,11 @@ venv/
 .DS_Store
 output/
 
+# Personal/local context — not part of the public portfolio artifact
+CONTEXT.md
+.claude/settings.local.json
+.claude/.context-read-sentinel
+
 # Node / Next.js
 node_modules/
 .next/

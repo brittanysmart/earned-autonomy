@@ -26,6 +26,10 @@
 
 ## Commit message style
 
+- Before drafting any commit message, re-read CONTEXT.md. The message and any judgment calls
+  about what to highlight should reflect this project's actual purpose (portfolio artifact
+  for a job search demonstrating AI interaction design/governance expertise) — not just
+  describe the diff mechanically.
 - First line: short, plain-English summary of what changed (imperative mood: "Add," "Fix,"
   "Move"). Plain English, not jargon-dense — but still technically precise, not dumbed down.
 - Body (if needed): explain WHY the change was made, not just what — especially any tradeoff
