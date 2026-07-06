@@ -1,31 +1,43 @@
 ---
-source: ui.shadcn.com/docs/components/radix/badge
+source: ui.shadcn.com/docs/components/badge
 authority: official
-last_fetched: 2026-07-04
+last_fetched: 2026-07-05
 ---
 
 # Badge
 
-Displays a badge or a component that looks like a badge.
+Displays a badge or a component that looks like a badge. Available in both Base UI and
+Radix UI variants.
 
 ## Installation
 pnpm dlx shadcn@latest add badge
 
 ## Usage
+```
+import { Badge } from "@/components/ui/badge"
+
 <Badge variant="default | outline | secondary | destructive">Badge</Badge>
+```
 
-Use the variant prop to change the variant of the badge.
+## Variants
+- default
+- secondary
+- destructive
+- outline
+- ghost
+- link
 
-## Examples
-With Icon, With Spinner, Link (asChild), Custom Colors, RTL — all shown as code examples.
+## Implementation Patterns
+- With Icons: use `data-icon="inline-start"` or `data-icon="inline-end"` to position an icon
+- With Spinners: same data-attribute pattern as icons
+- As Links: the `render` prop enables badge-styled link rendering
+- Custom Colors: apply Tailwind classes directly (e.g. `bg-green-50 dark:bg-green-800`)
+- RTL: see the RTL configuration guide
 
 ## API Reference
 | Prop | Type | Default |
 |------|------|---------|
-| variant | "default" \| "secondary" \| "destructive" \| "outline" | "default" |
-| asChild | boolean | false |
+| variant | "default" \| "secondary" \| "destructive" \| "outline" \| "ghost" \| "link" | "default" |
+| className | string | — |
 
-Official variant set is exactly four values: default, secondary, destructive, outline.
-No "when to use which variant" guidance exists on this page. No rule on text length,
-notification-count formatting, or color-to-meaning mapping (e.g. does destructive always
-mean "error," or can it mean other things). The page is purely install + code + API surface.
+Fetched directly from the live docs page on 2026-07-05; no synthetic content added.

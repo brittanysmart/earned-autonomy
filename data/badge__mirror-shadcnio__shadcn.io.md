@@ -1,28 +1,36 @@
 ---
 source: shadcn.io/ui/badge
 authority: unofficial_mirror
-last_fetched: 2026-07-04
+last_fetched: 2026-07-05
 ---
 
 # Shadcn Badge
 
-Keep badge text super short. This free shadcn/ui badge looks best with 1-2 words max.
-"NEW" beats "Recently Added Item". If you need more text, you probably want a different
-component.
+A React badge component for status indicators, notification counts, and labels, built with
+TypeScript, Tailwind CSS, and CVA (class-variance-authority) for type-safe variants.
 
-Be consistent with colors. Don't use destructive for "Sale" just because it's red. Users
-learn that red means error in your app, then suddenly it means discount? That's confusing.
-Pick a color system and stick to it.
+## Variants
+- default – primary information and active states
+- secondary – neutral information and metadata
+- destructive – errors, warnings, urgent alerts
+- outline – subtle tags and filters
 
-Notification counts need limits. Nobody cares about the difference between 847 and 848
-unread messages. Cap it at "99+" or even "9+".
+## Usage Guidance
+- Keep text minimal: "NEW" reads better than a long label.
+- Maintain color consistency: reserve destructive styling for actual errors so users don't
+  learn to distrust the color.
+- Cap notification counts: show "99+" instead of exact numbers past a reasonable threshold.
+- Verify accessibility: test custom color contrast independently of the defaults.
+- Use sparingly: over-badging dilutes what a badge is supposed to draw attention to.
 
-Test color contrast. That lime green badge might look cool on your monitor, but can everyone
-read it?
+## API Reference
+| Prop | Type | Default | Purpose |
+|------|------|---------|---------|
+| variant | string | "default" | Visual style selection |
+| className | string | — | Custom CSS classes |
+| children | ReactNode | — | Badge content |
 
-This page contains real, useful judgment guidance (text-length rule, color-to-meaning mapping,
-counter-capping convention) that does not exist anywhere in the official docs. A team relying
-only on official docs would never see this. A team relying only on this mirror would be
-trusting unendorsed third-party opinion as if it were the design system's actual rule.
+## Installation
+npx shadcn@latest add badge
 
-No API reference table is present on this page.
+Fetched directly from the live docs page on 2026-07-05; no synthetic content added.

@@ -1,24 +1,28 @@
 ---
 source: shadcn.rails-components.com/docs/components/badge
 authority: unofficial_port
-last_fetched: 2026-07-04
+last_fetched: 2026-07-05
 ---
 
-# Badge (Rails port)
+# Badge Component (Rails port)
 
-<%= render_badge text: "Badge" %>
-<%= render_badge text: "Secondary", variant: :secondary %>
-<%= render_badge text: "Destructive", variant: :destructive %>
-<%= render_badge text: "Outline", variant: :outline %>
-<%= render_badge text: "Ghost", variant: :ghost %>
+Displays a badge or a component that looks like a badge.
 
-The method render_badge accepts a text: required keyword argument along with an optional
-variant: argument for the kind of badge to render.
+## Installation
+`rails generate shadcn-ui badge`
 
-Note: this port lists five variants including "ghost" — but the official shadcn/ui docs
-define exactly four Badge variants (default, secondary, destructive, outline) and no "ghost"
-variant exists for Badge in the official registry. This is an unsourced terminology/taxonomy
-substitution: a port has added a variant the source of truth never shipped, likely borrowed
-by analogy from the Button component's variant set, which does include "ghost."
+Generates two files: a helper (`badge_helper.rb`) and a view template (`_badge.html.erb`).
 
-No API reference table (prop/type/default) is present on this page.
+## Variants
+- default (Badge)
+- secondary
+- destructive
+- outline
+- ghost
+
+## Usage
+`<%= render_badge text:, variant: %>`
+
+`text:` is required. `variant:` is optional and selects the visual style.
+
+Fetched directly from the live docs page on 2026-07-05; no synthetic content added.
