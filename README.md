@@ -71,3 +71,8 @@ Worth stating plainly rather than hiding:
 
 - Afyia Smith, ["Design System Documentation Needs An Owner"](https://www.linkedin.com/pulse/design-system-documentation-needs-owner-afyia-smith-gjjhe/)
 - Emily Campbell, ["Layers of AI Experience"](https://emilycampbell.co/writing/layers-of-ai-experience)
+- Matt Pocock's AI skills work draws the same line this project is built on: a model
+  produces **facts** (things it found), but **decisions** stay with the human, and a
+  model left unchecked will quietly cross that line. Different domain, same boundary.
+- Andrei Tarkovsky's *Solaris* (1972). The station's ocean produces things that look and
+  feel completely real. Convincing was never the same as true. The crew still had to check.

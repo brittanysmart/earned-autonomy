@@ -2,14 +2,16 @@
 """
 Design System Knowledge Audit — agent core.
 
-Reads real snapshot docs for shadcn/ui components (official + unofficial mirrors),
-scores each source against four governance criteria (judgment boundaries, terminology
-consistency, staleness/drift, retrievability), and emits a list of flagged items in the
+Reads real snapshot docs for shadcn/ui components (official + unofficial mirrors) and asks
+a local model to score each source against four governance criteria (judgment boundaries,
+terminology consistency, staleness/drift, retrievability), emitting proposed flags in the
 exact shape the Approval Queue UI consumes.
 
-This is intentionally NOT auto-publishing anything. Every flag below is a *proposed*
-action with a stated confidence and reasoning. Nothing here executes on its own —
-that's the whole point of the governance thesis: the agent proposes, a human disposes.
+This is intentionally NOT auto-publishing anything. Every flag below is a *proposed* action
+with a model-stated confidence and reasoning. The 90%-confidence human-review threshold is a
+hardcoded policy in this file, not something the model controls — that split (model judges
+the finding, code enforces the review policy) is the actual governance mechanism this
+project demonstrates.
 """
 
 import re
@@ -18,10 +20,100 @@ import glob
 from pathlib import Path
 from datetime import datetime, timezone
 
+import litellm
+
 DATA_DIR = Path(__file__).parent / "data"
 OUTPUT_DIR = Path(__file__).parent / "output"
 
+MODEL = "ollama/qwen2.5:7b"
+API_BASE = "http://localhost:11434"
+MAX_TOKENS = 1024
+
+# Governance policy, enforced in code rather than left to the model: any flag the
+# model rates below this confidence is always surfaced for human review. The model
+# judges the finding; this threshold decides what counts as sure enough to skip a
+# human, and the model can't move it. A convincing answer isn't a correct one.
+REVIEW_THRESHOLD = 90
+
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
+
+CRITERIA = {
+    "judgment_boundaries": (
+        "Does this doc explain WHEN and WHY to use (or not use) this component, not just "
+        "install/API syntax? Flag official docs missing this guidance entirely. Flag "
+        "unofficial sources that uniquely provide real judgment guidance the official docs "
+        "lack."
+    ),
+    "terminology_consistency": (
+        "Does this doc's terminology (variant names, prop names) match the official "
+        "shadcn/ui vocabulary? Flag any variant or prop that is missing relative to the "
+        "official set, or that doesn't match official naming."
+    ),
+    "staleness_drift": (
+        "Is there any indication this doc reflects the current state of the component? "
+        "Flag the absence of a 'last updated', version, or changelog signal — especially "
+        "for unofficial sources."
+    ),
+    "retrievability": (
+        "Does this doc include a structured prop/type/default API reference table an "
+        "automated tool could reliably parse? Flag its absence."
+    ),
+}
+
+SYSTEM_PROMPT = (
+    "You are auditing documentation sources for a design system component, one source at a "
+    "time. You will be given metadata about the source (which component, whether it's the "
+    "official docs or an unofficial mirror/port, and the source URL) and the document's "
+    "full text.\n\n"
+    "Evaluate the document against these four criteria:\n\n"
+    + "\n".join(f"- {key}: {desc}" for key, desc in CRITERIA.items())
+    + "\n\nFor each criterion where you find a genuine, specific issue, call propose_flag "
+    "exactly once. Do NOT call propose_flag for a criterion with no real finding — silence "
+    "is a valid outcome. Ground every finding in a direct quote or specific detail from the "
+    "document, not a generic assumption. State your own confidence (0-100) in how correct "
+    "and specific the finding is."
+)
+
+PROPOSE_FLAG_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "propose_flag",
+        "description": "Propose a single governance flag for one issue found in this document.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "criterion": {"type": "string", "enum": list(CRITERIA.keys())},
+                "severity": {"type": "string", "enum": ["low", "medium", "high"]},
+                "confidence": {
+                    "type": "integer",
+                    "description": (
+                        "0-100: how confident you are this finding is correct and specific "
+                        "to this document."
+                    ),
+                },
+                "summary": {
+                    "type": "string",
+                    "description": "One plain-English sentence describing the issue, naming the component.",
+                },
+                "evidence": {
+                    "type": "string",
+                    "description": (
+                        "A complete quoted sentence or phrase from the document supporting "
+                        "this finding. Must be a full thought, never cut off mid-word or "
+                        "mid-quote."
+                    ),
+                },
+                "proposed_action": {
+                    "type": "string",
+                    "description": "One concrete, actionable recommendation to address the finding.",
+                },
+            },
+            "required": [
+                "criterion", "severity", "confidence", "summary", "evidence", "proposed_action",
+            ],
+        },
+    },
+}
 
 
 def parse_file(path: Path):
@@ -53,135 +145,155 @@ def load_all():
     return [parse_file(Path(f)) for f in files]
 
 
-def flag(component, source, criterion, severity, confidence, summary, evidence, recommended_action):
-    return {
-        "id": f"{component}-{source}-{criterion}",
-        "component": component,
-        "source": source,
-        "criterion": criterion,
-        "severity": severity,          # low | medium | high
-        "confidence": confidence,      # agent's confidence 0-100 that this flag is correct
-        "summary": summary,
-        "evidence": evidence,
-        "proposed_action": recommended_action,
-        "requires_human_review": confidence < 90,  # governance rule: below 90, always surface for review
-        "status": "pending",           # pending | approved | rejected — set by the human via the queue UI
-    }
+def clamp_confidence(raw):
+    """Pin model-reported confidence to [0, 100]; tool-call output isn't guaranteed in range."""
+    return max(0, min(100, raw))
 
 
-def check_judgment_boundaries(doc):
-    body = doc["body"]
-    flags = []
+def requires_human_review(confidence):
+    """Governance rule: below REVIEW_THRESHOLD, always surface for a human.
+
+    Deliberately a plain comparison the model can't influence — the whole point of the
+    project is that this policy lives in code, not in the model's own judgment of itself.
+    """
+    return confidence < REVIEW_THRESHOLD
+
+
+def score_doc(doc, official_reference=None):
+    """Ask the model to evaluate one doc against the four criteria, returning proposed flags.
+
+    official_reference (the official doc's own body) is passed in when scoring a non-official
+    doc, so terminology_consistency is checked against real current official content instead
+    of the model's own (possibly stale) training knowledge of shadcn/ui's API.
+    """
     if doc["role"] == "official":
-        pattern = r'no .{0,10}when to use.{0,150}(exists|guidance)'
-        if re.search(pattern, body, re.I | re.DOTALL):
-            flags.append(flag(
-                doc["component"], doc["meta"].get("source", "unknown"), "judgment_boundaries",
-                severity="high", confidence=95,
-                summary=f"The official '{doc['component']}' docs never say when you should (or shouldn't) use it.",
-                evidence=_first_sentence(body, pattern),
-                recommended_action="Ask the doc owner to add a \"when to use this\" section — right now an agent citing this page has no guardrails.",
-            ))
+        reference_note = (
+            "This document IS the official source. Do not evaluate terminology_consistency "
+            "against it — there is nothing external to compare it to."
+        )
+    elif official_reference:
+        reference_note = (
+            "For terminology_consistency, compare this document's variant/prop names against "
+            "the CURRENT OFFICIAL documentation below — not your own prior knowledge, which "
+            "may be out of date:\n\n--- OFFICIAL REFERENCE ---\n"
+            f"{official_reference}\n--- END OFFICIAL REFERENCE ---"
+        )
     else:
-        # Mirror sources sometimes DO contain judgment guidance the official docs lack —
-        # detect via the marker sentence every snapshot uses when this is the case, rather
-        # than hardcoding component-specific phrases.
-        pattern = r'contains real, useful judgment guidance|contains judgment guidance'
-        if re.search(pattern, body, re.I):
-            flags.append(flag(
-                doc["component"], doc["meta"].get("source", "unknown"), "judgment_boundaries",
-                severity="medium", confidence=80,
-                summary=f"This unofficial copy of the docs gives usage advice for '{doc['component']}' that the official docs never mention.",
-                evidence=_first_match(body, r'#[^\n]*\n\n(.{1,350}?)\n\n', flags_extra=re.DOTALL),
-                recommended_action="Either add this advice to the official docs (if it's right), or label it an unofficial opinion (if it's not).",
-            ))
-    return flags
+        reference_note = (
+            "No official reference document was available for this run — treat any "
+            "terminology_consistency finding as low confidence."
+        )
 
+    user_prompt = (
+        f"Component: {doc['component']}\n"
+        f"Source role: {doc['role']} (official = the design system's own docs; "
+        "unofficial_mirror/unofficial_port = a third-party copy)\n"
+        f"Source URL: {doc['meta'].get('source', 'unknown')}\n\n"
+        f"{reference_note}\n\n"
+        f"Document text:\n{doc['body']}"
+    )
 
-def check_terminology_consistency(doc):
+    try:
+        response = litellm.completion(
+            model=MODEL,
+            api_base=API_BASE,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            tools=[PROPOSE_FLAG_TOOL],
+            temperature=0,  # this is structured extraction, not creative chat — minimize
+            # run-to-run variance in whether the model follows the reference/self-comparison
+            # instructions above.
+            max_tokens=MAX_TOKENS,  # rule out token-budget truncation cutting a tool-call
+            # argument short mid-sentence, separate from the model choosing a short (but
+            # complete) answer on its own.
+        )
+    except Exception as e:
+        print(
+            f"Skipping {doc['meta'].get('source', doc['path'])}: model call failed ({e}). "
+            "Is Ollama running? Try: brew services start ollama"
+        )
+        return []
+
+    if response.choices[0].finish_reason == "length":
+        # max_tokens is a single budget shared across every propose_flag call the model
+        # makes in this response — if it hit the cap, the last tool call may be cut off
+        # mid-argument and silently dropped below as malformed JSON. Say so out loud
+        # instead of that looking identical to "the model found nothing here."
+        print(
+            f"Warning: {doc['meta'].get('source', doc['path'])} hit the {MAX_TOKENS}-token "
+            "response limit — some findings may be missing or truncated."
+        )
+
     flags = []
-    body = doc["body"]
-    if re.search(r'unsourced terminology|taxonomy (substitution|inconsistency|drift)', body, re.I):
-        note = _first_sentence(body, r'Note:|This (?:source|port|page)')
-        flags.append(flag(
-            doc["component"], doc["meta"].get("source", "unknown"), "terminology_consistency",
-            severity="medium", confidence=88,
-            summary=f"This unofficial copy uses different names or variants for '{doc['component']}' than the official docs do.",
-            evidence=note,
-            recommended_action="Ask the doc owner to line up the naming — either fix the mismatch or add a note mapping one to the other.",
-        ))
+    seen_criteria = set()  # the model is told to call propose_flag once per criterion, but
+    # nothing stops it calling twice — enforce that contract here too, since a duplicate id
+    # would otherwise collide as a React key in the Approval Queue UI.
+    tool_calls = response.choices[0].message.tool_calls or []
+    for call in tool_calls:
+        try:
+            args = json.loads(call.function.arguments)
+            criterion = args["criterion"]
+            severity = args["severity"]
+            confidence = int(round(float(args["confidence"])))
+            summary = args["summary"]
+            evidence = args["evidence"]
+            proposed_action = args["proposed_action"]
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            continue  # malformed tool call from the model — skip rather than guess
+
+        if criterion not in CRITERIA or severity not in ("low", "medium", "high"):
+            continue  # model output outside the contract — skip rather than guess
+
+        if criterion == "terminology_consistency" and doc["role"] == "official":
+            # Structurally meaningless (the official doc can't be inconsistent with itself)
+            # and the model doesn't reliably follow the prompt instruction not to do this —
+            # enforce it here in code instead of trusting compliance.
+            continue
+
+        if criterion in seen_criteria:
+            continue  # duplicate call for a criterion already flagged on this doc
+        seen_criteria.add(criterion)
+
+        confidence = clamp_confidence(confidence)
+        source = doc["meta"].get("source", "unknown")
+        flags.append({
+            "id": f"{doc['component']}-{source}-{criterion}",
+            "component": doc["component"],
+            "source": source,
+            "criterion": criterion,
+            "severity": severity,
+            "confidence": confidence,
+            "summary": summary,
+            "evidence": evidence,
+            "proposed_action": proposed_action,
+            # Governance rule lives in requires_human_review(), not here — the model rates
+            # its own confidence, but code alone decides what counts as sure enough to skip
+            # a human. A convincing answer isn't the same as a correct one. (Solaris, 1972.)
+            "requires_human_review": requires_human_review(confidence),
+            "status": "pending",  # pending | approved | rejected — set via the queue UI
+        })
     return flags
-
-
-def check_staleness_drift(doc):
-    flags = []
-    body = doc["body"]
-    meta = doc["meta"]
-    has_version_note = bool(re.search(r'tailwind v4|updated:|changelog', body, re.I))
-    if doc["role"] != "official" and not has_version_note:
-        flags.append(flag(
-            doc["component"], meta.get("source", "unknown"), "staleness_drift",
-            severity="low", confidence=60,
-            summary=f"This unofficial copy doesn't say when it was last updated, so there's no way to tell if it's stale.",
-            evidence="No 'Updated:', changelog, or version-specific note found in this source.",
-            recommended_action="Low confidence — a person should check this copy's real last-updated date before calling this stale.",
-        ))
-    return flags
-
-
-def check_retrievability(doc):
-    flags = []
-    body = doc["body"]
-    has_api_table = bool(re.search(r'\|\s*Prop\s*\|\s*Type\s*\|\s*Default\s*\|', body, re.I))
-    has_frontmatter = bool(doc["meta"])
-    if not has_api_table:
-        flags.append(flag(
-            doc["component"], doc["meta"].get("source", "unknown"), "retrievability",
-            severity="medium" if doc["role"] == "official" else "low",
-            confidence=92 if doc["role"] == "official" else 70,
-            summary=f"This page has no prop/type/default table, so a tool can't reliably pull '{doc['component']}'s API from it.",
-            evidence="No API reference table found in document body.",
-            recommended_action="Add a prop/type/default table — without one, an agent reading this page can't reliably learn the API.",
-        ))
-    return flags
-
-
-def _first_match(body, pattern, flags_extra=0):
-    m = re.search(pattern, body, re.I | re.DOTALL | flags_extra)
-    return re.sub(r"\s+", " ", m.group(0)).strip() if m else ""
-
-
-def _first_sentence(body, pattern):
-    # Expands a match to its full surrounding sentence instead of a fixed
-    # character window — a fixed window can land mid-word at either end
-    # whenever the source markdown happens to line-wrap nearby, which reads
-    # as a bug in the evidence quote rather than an intentional excerpt.
-    text = re.sub(r"\s+", " ", body)
-    m = re.search(pattern, text, re.I)
-    if not m:
-        return ""
-    start, end = m.start(), m.end()
-    sent_start = text.rfind(". ", 0, start)
-    sent_start = sent_start + 2 if sent_start != -1 else 0
-    sent_end = text.find(". ", end)
-    sent_end = sent_end + 1 if sent_end != -1 else len(text)
-    return text[sent_start:sent_end].strip()
 
 
 def run():
     docs = load_all()
+    # Picks the first official doc across the whole corpus, not per-component — fine while
+    # data/ holds a single component (a deliberate scope decision, see CONTEXT.md), but this
+    # would need to key official_reference by component before a second component is added.
+    official_doc = next((d for d in docs if d["role"] == "official"), None)
+    official_reference = official_doc["body"] if official_doc else None
+
     all_flags = []
     for doc in docs:
-        all_flags.extend(check_judgment_boundaries(doc))
-        all_flags.extend(check_terminology_consistency(doc))
-        all_flags.extend(check_staleness_drift(doc))
-        all_flags.extend(check_retrievability(doc))
+        all_flags.extend(score_doc(doc, official_reference=official_reference))
 
     out = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source_count": len(docs),
         "flag_count": len(all_flags),
-        "governance_note": "Every item below is a proposed flag, not an executed action. Nothing auto-publishes. Confidence < 90 always requires human review per policy.",
+        "governance_note": "Every item below is something the agent noticed, not something it did. Confidence under 90 means a human has to look. No exceptions.",
         "flags": all_flags,
     }
 
