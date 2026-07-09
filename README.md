@@ -12,23 +12,24 @@ Approval Queue UI and decides: approve, reject, or edit.
 
 The core idea: autonomy is earned one action at a time. It is not granted by default.
 
-## Why the scoring is plain code, not an AI model
+## Why the model scores but doesn't decide
 
-It would be easy to have an AI model read each doc and guess a confidence score. This
-project deliberately does not do that.
+It would be easy to let an AI model read each doc, guess a confidence score, and act on
+anything it felt sure about. This project deliberately keeps those two jobs apart.
 
-Instead, `audit.py` uses plain pattern matching (regex) to check documentation against four
-rules: does it explain when to use the component, does its wording match the official docs,
-does it show when it was last updated, and does it include a proper API reference table.
+`audit.py` sends each doc to a local model (Ollama, running qwen2.5 through LiteLLM's
+tool-calling interface) and asks it to judge the doc against four rules: does it explain
+when to use the component, does its wording match the official docs, does it show when it
+was last updated, and does it include a proper API reference table. The model rates its own
+confidence in each finding.
 
-Here's why that matters. With plain code, every confidence number traces back to one visible
-line you can read. If a flag says "88% confident," you can open `audit.py`, find the exact
-check that produced that number, and see exactly why. Nothing is hidden and nothing has to
-be taken on faith.
+Here's the part that matters. The model does not get to decide what counts as sure enough to
+skip a human. That rule lives in one hardcoded line: anything below 90 confidence is always
+sent for review. The model judges the finding, the code enforces the policy, and the model
+cannot move the line.
 
-An AI model's confidence score would look the same on screen, but you could never point to
-the exact reasoning behind it. That gap, between a number you can verify and a number you
-just have to trust, is the whole point of this project.
+A convincing answer is not the same as a correct one. Keeping the review threshold in code,
+where you can read it and the model can't touch it, is the whole point of this project.
 
 ## Run it
 
@@ -48,9 +49,9 @@ python3 audit.py
 ## How it's structured
 
 - **`audit.py`**: the scoring script. Reads `data/*.md`, writes `output/flags.json`.
-- **`data/`**: three sample docs, the official shadcn Badge docs plus two unofficial
-  copies. These are written as fixtures, each one built to demonstrate a specific problem,
-  not pulled live from the web.
+- **`data/`**: three real docs saved as snapshots, the official shadcn Badge page plus two
+  unofficial copies (shadcn.io and a Rails-components port). Real content from each source,
+  not authored fixtures. They are saved rather than fetched live; see Known limitations.
 - **`output/`**: generated automatically, not checked into git. `flags.json` is the
   scorer's output. `decisions.json` is the human decision log the UI writes to, with an id,
   a decision, a note, and a timestamp for each entry.
@@ -64,8 +65,9 @@ Worth stating plainly rather than hiding:
 
 - `audit.py` scores saved snapshot files, not documentation it fetches live. A real version
   of this would connect to a live API or MCP source instead of static markdown files.
-- The scoring is regex based, not an AI model, on purpose. See above for why that's a
-  deliberate choice, not a shortcut.
+- Scoring runs on a local model through Ollama, so the scorer needs Ollama running, and the
+  confidence numbers are the model's own judgment rather than a fixed formula. The one thing
+  that is fixed is the review threshold in code, which the model never gets to move.
 
 ## Related reading
 
