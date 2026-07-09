@@ -12,7 +12,7 @@ if echo "$COMMAND" | grep -qE 'git commit'; then
   MAX_AGE_SECONDS=$((6 * 60 * 60))  # 6 hours
 
   if [[ ! -f "$SENTINEL" ]]; then
-    echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Read CONTEXT.md in the project root before committing, then retry the commit. It explains the intent behind this project (job-search portfolio piece) so commit messages and decisions reflect that, not just the diff."}}'
+    echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Read CONTEXT.md in the project root before committing, then retry the commit. It explains this project'"'"'s intent and standing decisions so commit messages and judgment calls reflect that, not just the diff."}}'
     exit 0
   fi
 

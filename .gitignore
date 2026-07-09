@@ -7,10 +7,16 @@ venv/
 .DS_Store
 output/
 
-# Personal/local context — not part of the public portfolio artifact
+# Personal/local context — not for public sharing
 CONTEXT.md
+approval-queue-brief.md
 .claude/settings.local.json
 .claude/.context-read-sentinel
+
+# Local agent tooling (installed skills, lockfiles) — not project code
+.claude/skills/
+ui/.agents/
+ui/skills-lock.json
 
 # Node / Next.js
 node_modules/
