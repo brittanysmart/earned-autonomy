@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "python3 ../audit.py",
+    "predev": "../.venv/bin/python3 ../audit.py",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

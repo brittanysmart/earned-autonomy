@@ -10,16 +10,18 @@ happens until a person clicks one of those buttons.
 
 From the repo root, `./demo.sh` regenerates the data and starts this app in one step.
 
-To run just the UI on its own:
+To run just the UI on its own, the repo-root `.venv` needs to exist first (created
+automatically by `./demo.sh`, or manually with `uv venv ../.venv && uv pip install
+--python ../.venv/bin/python -r ../requirements.txt` from this directory):
 
 ```bash
 npm install
 npm run dev
 ```
 
-The `predev` script runs `python3 ../audit.py` automatically first, so
-`output/flags.json` is always current. Then open
-[http://localhost:3000](http://localhost:3000).
+The `predev` script runs `audit.py` through that `.venv` automatically first (it calls a
+local model via Ollama, so Ollama needs to be running), so `output/flags.json` is always
+current. Then open [http://localhost:3000](http://localhost:3000).
 
 ## Notes
 
