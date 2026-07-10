@@ -1,10 +1,14 @@
 # Plumb
 
-Plumb, pronounced "plum," like the fruit.
+An approval-queue console for changes an AI proposes but a human decides. The tools that
+detect documentation drift all stop at a report, and a report has no state. Plumb makes it a
+queue with state (pending, approved, rejected): a change you can act on is governed, a change
+you can only read is not.
 
-An approval-queue console for changes an AI proposes but a human decides. The repo is named
-**earned autonomy** after the idea it proves: autonomy is earned one action at a time, not
-granted by default.
+![Plumb's review queue: a confidence-and-severity triage with a policy slider that sets the auto-approve line](docs/plumb-hero.png)
+
+The repo is named **earned autonomy** after the idea it proves: autonomy is earned one action
+at a time, not granted by default. (Plumb is pronounced "plum," like the fruit.)
 
 ## What this is
 
@@ -52,7 +56,7 @@ where you can read it and the model can't touch it, is the whole point of this p
 ./demo.sh
 ```
 
-This regenerates `output/flags.json` from `audit.py` and starts the Approval Queue UI at
+This regenerates `output/flags.json` from `audit.py` and starts Plumb at
 [http://localhost:3000](http://localhost:3000). Requires Python 3 and Node.
 
 To run just the scorer, without the UI:
@@ -87,6 +91,11 @@ Worth stating plainly rather than hiding:
 - Approving a flag shows the diff Plumb would submit as a pull request. It does not open a
   real PR or touch the live doc. That last mile is deliberately left as a shown intent rather
   than a real integration, so the demo stays self-contained.
+- One flag in the demo is an authored high-severity example, labeled as authored in the UI.
+  The real docs did not produce a high-severity finding this run, so it exists to show how
+  Plumb treats a high-blast-radius change: it stays with a human at any autonomy setting and
+  needs a deliberate confirmation. Its wording is hand-written; the decision flow around it is
+  the real thing.
 
 ## Related reading
 
