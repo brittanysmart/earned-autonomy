@@ -8,7 +8,11 @@ you can only read is not.
 ![Plumb's review queue: a confidence-and-severity triage with a policy slider that sets the auto-approve line](docs/plumb-hero.png)
 
 The repo is named **earned autonomy** after the idea it proves: autonomy is earned one action
-at a time, not granted by default. (Plumb is pronounced "plum," like the fruit.)
+at a time, not granted by default.
+
+**Why "Plumb":** a plumb bob shows whether a wall is truly vertical. Plumb does that for docs.
+It measures each source against the source of truth and flags what's off. (Said like the
+fruit, "plum.")
 
 ## What this is
 
