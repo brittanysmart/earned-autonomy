@@ -39,6 +39,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-plum: var(--plum);
+  --color-sage: var(--sage);
+  --color-caution: var(--caution);
+  --color-caution-foreground: var(--caution-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -49,82 +53,88 @@
 }
 
 /*
- * Colors are sampled directly from the Criterion Collection cover of
- * Tarkovsky's Solaris (1972): a gradient from a rust-amber sky (hue ~45-73)
- * down to a deep indigo ocean (hue ~257-263). --primary/--ring/--accent stay
- * on the warm sky hue in both themes (the constant across the gradient);
- * --background/--card shift from the sky's warmth in light mode to the
- * ocean's indigo in dark mode, rather than a single hue tinting both.
- * amber/emerald/red stay untouched everywhere else: those carry real meaning
- * (caution/trust/danger) that shouldn't compete with a brand color.
+ * Plumb palette — a warm, planted register (cream ground, ink-brown text) with
+ * three meaning-bearing accents that never compete: green = the action a human
+ * takes (approve/execute), plum = the brand mark, sage = focus/attention. Amber
+ * carries caution and red carries danger, held apart from the brand so severity
+ * reads on its own axis. Values are the design's own hex, kept literal so the
+ * built product matches the mockup rather than an approximation of it.
  */
 :root {
-  --background: oklch(0.985 0.005 80);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.5 0.13 50);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0.003 80);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0.003 80);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.95 0.025 75);
-  --accent-foreground: oklch(0.35 0.11 50);
-  --destructive: oklch(0.47 0.235 27.325);
-  --border: oklch(0.93 0 0);
-  --input: oklch(0.93 0 0);
-  --ring: oklch(0.58 0.11 50);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #eceae4;
+  --foreground: #221f1a;
+  --card: #fbfaf7;
+  --card-foreground: #221f1a;
+  --popover: #fbfaf7;
+  --popover-foreground: #221f1a;
+  --primary: #3f6b1f;
+  --primary-foreground: #fbfaf7;
+  --secondary: #e6e2d8;
+  --secondary-foreground: #33302a;
+  --muted: #eae7df;
+  --muted-foreground: #655f56;
+  --accent: #f4eef1;
+  --accent-foreground: #8a3d63;
+  --destructive: #a8391a;
+  --border: #e2ddd2;
+  --input: #e2ddd2;
+  --ring: #7f9a4c;
+  --plum: #8a3d63;
+  --sage: #7f9a4c;
+  --caution: #835a10;
+  --caution-foreground: #6b4a10;
+  --chart-1: #3f6b1f;
+  --chart-2: #7f9a4c;
+  --chart-3: #a5741b;
+  --chart-4: #8a3d63;
+  --chart-5: #6f6a5f;
+  --radius: 0.75rem;
+  --sidebar: #eae7df;
+  --sidebar-foreground: #221f1a;
+  --sidebar-primary: #3f6b1f;
+  --sidebar-primary-foreground: #fbfaf7;
+  --sidebar-accent: #f4eef1;
+  --sidebar-accent-foreground: #8a3d63;
+  --sidebar-border: #e2ddd2;
+  --sidebar-ring: #7f9a4c;
 }
 
 .dark {
-  --background: oklch(0.18 0.035 258);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.22 0.02 258);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.22 0.02 258);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.74 0.12 55);
-  --primary-foreground: oklch(0.145 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.26 0.025 258);
-  --accent-foreground: oklch(0.87 0.06 75);
-  --destructive: oklch(0.704 0.191 22.216);
+  --background: #201d1a;
+  --foreground: #ece8e0;
+  --card: #2a2621;
+  --card-foreground: #ece8e0;
+  --popover: #2a2621;
+  --popover-foreground: #ece8e0;
+  --primary: #8fb15a;
+  --primary-foreground: #1a1712;
+  --secondary: #33302a;
+  --secondary-foreground: #ece8e0;
+  --muted: #33302a;
+  --muted-foreground: #a39e92;
+  --accent: #362b31;
+  --accent-foreground: #d99cc0;
+  --destructive: #d0654a;
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.62 0.1 55);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: #9fb86e;
+  --plum: #cf8fb2;
+  --sage: #9fb86e;
+  --caution: #d1a24e;
+  --caution-foreground: #e8c78a;
+  --chart-1: #8fb15a;
+  --chart-2: #9fb86e;
+  --chart-3: #d1a24e;
+  --chart-4: #cf8fb2;
+  --chart-5: #a39e92;
+  --sidebar: #2a2621;
+  --sidebar-foreground: #ece8e0;
+  --sidebar-primary: #8fb15a;
+  --sidebar-primary-foreground: #1a1712;
+  --sidebar-accent: #362b31;
+  --sidebar-accent-foreground: #d99cc0;
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: #9fb86e;
 }
 
 @layer base {
@@ -137,4 +147,50 @@
   html {
     @apply font-sans;
   }
+  /* Quality floor, unannounced: honor reduced-motion everywhere rather than
+     per-component. Kills the settle/zoom animations for anyone who asked the
+     OS not to animate, without each component opting in. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* The autonomy-policy slider: a native range input (no dependency) tinted to
+   the brand so it reads as a Plumb control, not a browser default. */
+input[type="range"].plumb-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  outline: none;
+}
+input[type="range"].plumb-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--primary);
+  border: 3px solid var(--card);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  cursor: pointer;
+}
+input[type="range"].plumb-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--primary);
+  border: 3px solid var(--card);
+  cursor: pointer;
+}
+input[type="range"].plumb-slider:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 55%, transparent);
 }

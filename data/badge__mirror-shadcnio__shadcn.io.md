@@ -2,6 +2,7 @@
 source: shadcn.io/ui/badge
 authority: unofficial_mirror
 last_fetched: 2026-07-05
+owner: No owner declared
 ---
 
 # Shadcn Badge

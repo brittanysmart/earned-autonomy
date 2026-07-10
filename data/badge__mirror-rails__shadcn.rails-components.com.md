@@ -2,6 +2,7 @@
 source: shadcn.rails-components.com/docs/components/badge
 authority: unofficial_port
 last_fetched: 2026-07-05
+owner: No owner declared
 ---
 
 # Badge Component (Rails port)

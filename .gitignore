@@ -10,6 +10,8 @@ output/
 # Personal/local context — not for public sharing
 CONTEXT.md
 approval-queue-brief.md
+# Bundled design export (558KB artifact, kept locally, not committed)
+Plumb Approval Queue.html
 .claude/settings.local.json
 .claude/.context-read-sentinel
 
@@ -17,6 +19,15 @@ approval-queue-brief.md
 .claude/skills/
 ui/.agents/
 ui/skills-lock.json
+
+# AI/editor tooling config — kept locally, not committed (solo-run repo)
+.claude/settings.json
+.claude/hooks/
+.cursorrules
+CLAUDE.md
+ui/CLAUDE.md
+ui/AGENTS.md
+ui/.mcp.json
 
 # Node / Next.js
 node_modules/

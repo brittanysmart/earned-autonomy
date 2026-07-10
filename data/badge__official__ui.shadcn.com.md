@@ -2,6 +2,7 @@
 source: ui.shadcn.com/docs/components/badge
 authority: official
 last_fetched: 2026-07-05
+owner: shadcn · upstream
 ---
 
 # Badge

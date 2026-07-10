@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Approval Queue — Earned Autonomy",
+  title: "Plumb — Approval Queue",
   description: "A human-in-the-loop approval queue for AI-proposed documentation flags.",
 };
 

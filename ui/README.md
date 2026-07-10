@@ -1,10 +1,13 @@
-# Approval Queue UI
+# Plumb UI
 
-This is the frontend half of [Earned Autonomy](../README.md). It's a Next.js and
+This is the frontend half of [Earned Autonomy](../README.md). Plumb is a Next.js and
 shadcn/ui app that reads `../output/flags.json` and shows each flag as a card: component,
-source, category, severity, confidence, evidence, and a suggested action. Approve, Reject,
-and Edit buttons on each card write a decision to `../output/decisions.json`. Nothing
-happens until a person clicks one of those buttons.
+source, category, severity, confidence, evidence, the exact change it would write, and a
+plain-language summary. Approve, Skip, and Edit on each card write a decision to
+`../output/decisions.json`. Nothing happens until a person clicks one of those buttons.
+
+The three screens (start, review queue with guided and all-at-once modes, and sources) live
+in `src/components/plumb/`.
 
 ## Run it
 

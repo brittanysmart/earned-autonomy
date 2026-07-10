@@ -35,6 +35,24 @@ MAX_TOKENS = 1024
 # human, and the model can't move it. A convincing answer isn't a correct one.
 REVIEW_THRESHOLD = 90
 
+# Curated, on purpose: flags the model produced that a human knows are wrong, kept
+# in the demo and labeled rather than hidden. A queue that never shows its own
+# misses trains reviewers to rubber-stamp — precision matters more than recall in a
+# human-in-the-loop system, because the scarce resource is reviewer attention. Keyed
+# by the deterministic flag id (component-source-criterion). Confirm designations
+# against a fresh run before trusting them; the model's output can shift.
+KNOWN_FALSE_POSITIVES = {
+    "badge-shadcn.io/ui/badge-terminology_consistency": (
+        "False alarm, kept on purpose. This flag says the \"default\" variant doesn't "
+        "match the official \"default\" variant. Same name. What tripped the scorer is "
+        "that the mirror writes a short description after the name (\"default – primary "
+        "information and active states\"), and it compared that whole line to the bare "
+        "official name. It flagged a variant that was never wrong. Real finding, real "
+        "miss, kept visible because a queue that hides its own mistakes teaches you to "
+        "stop reading the evidence."
+    ),
+}
+
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
 
 CRITERIA = {
@@ -71,7 +89,12 @@ SYSTEM_PROMPT = (
     "exactly once. Do NOT call propose_flag for a criterion with no real finding — silence "
     "is a valid outcome. Ground every finding in a direct quote or specific detail from the "
     "document, not a generic assumption. State your own confidence (0-100) in how correct "
-    "and specific the finding is."
+    "and specific the finding is.\n\n"
+    "For every flag also provide: 'plain' — the fix in one jargon-free sentence a non-expert "
+    "could act on; and the exact edit as 'patch_before' (text copied verbatim from the "
+    "document that changes, or empty if you are only adding) and 'patch_after' (the exact new "
+    "text). The patch must be a real, specific edit to THIS document's text, not a vague "
+    "instruction."
 )
 
 PROPOSE_FLAG_TOOL = {
@@ -107,9 +130,32 @@ PROPOSE_FLAG_TOOL = {
                     "type": "string",
                     "description": "One concrete, actionable recommendation to address the finding.",
                 },
+                "plain": {
+                    "type": "string",
+                    "description": (
+                        "The same fix restated in one plain sentence a non-expert could act "
+                        "on, no jargon. This is what a reviewer reads first."
+                    ),
+                },
+                "patch_before": {
+                    "type": "string",
+                    "description": (
+                        "The exact text copied verbatim from the document that your fix "
+                        "would change. Empty string if the fix only ADDS new text with "
+                        "nothing to replace."
+                    ),
+                },
+                "patch_after": {
+                    "type": "string",
+                    "description": (
+                        "The exact replacement text, or the new text to add. This is the "
+                        "concrete edit Plumb would write into the source."
+                    ),
+                },
             },
             "required": [
                 "criterion", "severity", "confidence", "summary", "evidence", "proposed_action",
+                "plain", "patch_before", "patch_after",
             ],
         },
     },
@@ -240,6 +286,11 @@ def score_doc(doc, official_reference=None):
             summary = args["summary"]
             evidence = args["evidence"]
             proposed_action = args["proposed_action"]
+            # plain/patch are newer, lower-stakes fields — tolerate a model that
+            # omits them rather than dropping an otherwise-valid flag over it.
+            plain = args.get("plain", "") or proposed_action
+            patch_before = args.get("patch_before", "")
+            patch_after = args.get("patch_after", "")
         except (KeyError, TypeError, ValueError, json.JSONDecodeError):
             continue  # malformed tool call from the model — skip rather than guess
 
@@ -258,8 +309,10 @@ def score_doc(doc, official_reference=None):
 
         confidence = clamp_confidence(confidence)
         source = doc["meta"].get("source", "unknown")
+        flag_id = f"{doc['component']}-{source}-{criterion}"
+        fp_note = KNOWN_FALSE_POSITIVES.get(flag_id)
         flags.append({
-            "id": f"{doc['component']}-{source}-{criterion}",
+            "id": flag_id,
             "component": doc["component"],
             "source": source,
             "criterion": criterion,
@@ -268,13 +321,73 @@ def score_doc(doc, official_reference=None):
             "summary": summary,
             "evidence": evidence,
             "proposed_action": proposed_action,
+            "plain": plain,
+            # The concrete edit the reviewer approves, shown as a diff in the UI.
+            # before="" means a pure addition; file is the source it lands in.
+            "patch": {
+                "file": source,
+                "before": patch_before,
+                "after": patch_after,
+            },
             # Governance rule lives in requires_human_review(), not here — the model rates
             # its own confidence, but code alone decides what counts as sure enough to skip
             # a human. A convincing answer isn't the same as a correct one. (Solaris, 1972.)
             "requires_human_review": requires_human_review(confidence),
+            "false_positive": fp_note is not None,
+            "false_positive_note": fp_note or "",
+            "illustrative": False,
+            "illustrative_note": "",
             "status": "pending",  # pending | approved | rejected — set via the queue UI
         })
     return flags
+
+
+# One authored high-severity flag, appended and labeled as authored in the UI. The
+# real model didn't produce a high-severity finding on these docs this run, so the
+# blast-radius behavior (a high-risk change stays with a human at any autonomy
+# setting and needs a deliberate confirmation) would otherwise have nothing to
+# demonstrate. Everything about the decision flow is real; only this flag's content
+# is hand-written, and the UI says so on the card.
+DEMO_HIGH_FLAG = {
+    "id": "badge-DEMO-judgment_boundaries-high",
+    "component": "badge",
+    "source": "ui.shadcn.com/docs/components/badge",
+    "criterion": "judgment_boundaries",
+    "severity": "high",
+    "confidence": 68,
+    "summary": "An example renders Badge as a clickable control, but Badge is non-interactive.",
+    "evidence": (
+        "The docs show Badge used inside an interactive pattern without stating that "
+        "Badge is presentational. A reader could ship it as a button and break keyboard "
+        "and screen-reader access for every consumer who copies the example."
+    ),
+    "proposed_action": (
+        "Add a 'When not to use' note: Badge is non-interactive; for a clickable state "
+        "use Button. Update any example that implies otherwise."
+    ),
+    "plain": "Say plainly that Badge isn't clickable, and point people to Button when they need that.",
+    "patch": {
+        "file": "ui.shadcn.com/docs/components/badge",
+        "before": "",
+        "after": (
+            "## When not to use\n\n"
+            "Badge is non-interactive. For a clickable state, use a `Button`."
+        ),
+    },
+    "requires_human_review": True,
+    "false_positive": False,
+    "false_positive_note": "",
+    "illustrative": True,
+    "illustrative_note": (
+        "Authored, not from the model. The three flags above came from a local model "
+        "reading the actual docs; that run produced no high-severity finding, so this "
+        "one is hand-written to show how Plumb treats a high-blast-radius change. A "
+        "high-severity flag stays with a human at any autonomy setting and needs a "
+        "deliberate confirmation to approve. Only this flag's wording is authored; the "
+        "decision flow around it is the real thing."
+    ),
+    "status": "pending",
+}
 
 
 def run():
@@ -289,11 +402,34 @@ def run():
     for doc in docs:
         all_flags.extend(score_doc(doc, official_reference=official_reference))
 
+    # One row per declared source, so the UI can show the authority hierarchy as
+    # data (who outranks whom, who owns it) rather than tribal knowledge — that
+    # ownership model is the governance point, see approval-queue-brief.md.
+    flags_by_source = {}
+    for f in all_flags:
+        flags_by_source[f["source"]] = flags_by_source.get(f["source"], 0) + 1
+    sources = [
+        {
+            "source": d["meta"].get("source", "unknown"),
+            "authority": d["meta"].get("authority", "unknown"),
+            "last_fetched": d["meta"].get("last_fetched", "unknown"),
+            "owner": d["meta"].get("owner", "No owner declared"),
+            "role": d["role"],
+            "flag_count": flags_by_source.get(d["meta"].get("source", "unknown"), 0),
+        }
+        for d in docs
+    ]
+
+    # Appended after the source tally so the Sources screen's per-source counts
+    # reflect only real model findings, not the authored demo flag.
+    all_flags.append(DEMO_HIGH_FLAG)
+
     out = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source_count": len(docs),
         "flag_count": len(all_flags),
-        "governance_note": "Every item below is something the agent noticed, not something it did. Confidence under 90 means a human has to look. No exceptions.",
+        "governance_note": "Every flag Plumb raises is something it noticed, not something it did. Confidence under 90 means a human has to look. No exceptions.",
+        "sources": sources,
         "flags": all_flags,
     }
 
