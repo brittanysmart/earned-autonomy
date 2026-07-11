@@ -14,6 +14,27 @@ at a time, not granted by default.
 It measures each source against the source of truth and flags what's off. (Said like the
 fruit, "plum.")
 
+## Why it exists
+
+I spent four years at a design systems company watching component docs drift. They lived in
+two places at once, Storybook and Figma, with nothing declaring which was official, so "the
+source of truth" was tribal knowledge. Components changed without the docs changing, and the
+gap was always found downstream by whoever trusted the docs most. That is a governance
+failure, not a tooling failure, and it is the same failure that happens when an AI agent edits
+a codebase without review: a change nobody decided to trust.
+
+The tools that detect this kind of drift all stop at a report, and a report has no state.
+Plumb makes it a queue. Every finding is a proposal with a confidence score, not an action,
+and the model does not get to decide what counts as sure enough to skip a human: that
+threshold is one hardcoded line the model cannot move.
+
+One flag in the demo is a labeled false positive, kept on purpose. A queue that hides its own
+mistakes trains reviewers to rubber-stamp, and a rubber stamp destroys the governance layer
+the tool exists to provide. Precision matters more than recall when the scarce resource is
+reviewer attention.
+
+[Full case study →](docs/case-study.md)
+
 ## What this is
 
 Plumb scans real documentation for shadcn/ui's Badge component and flags problems like
