@@ -60,6 +60,9 @@ resource worth protecting.
 
 The core idea: autonomy is earned one action at a time. It is not granted by default.
 
+_Plumb is a personal project, built on public shadcn/ui documentation and a local open model.
+It uses no proprietary, client, or employer data._
+
 ## Why the model scores but doesn't decide
 
 It would be easy to let an AI model read each doc, guess a confidence score, and act on
