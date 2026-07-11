@@ -4,7 +4,7 @@
 
 ## The one-line version
 
-Every tool that detects documentation drift produces a report, and a report has no state. I built the queue instead, because a change you can approve, reject, or edit is governed, and a change you can only look at is not.
+As AI agents start doing real work, the hard part is not getting them to act. It is the moment a human decides whether to let them. I built the approval layer for that moment, and demonstrated it on a documentation agent.
 
 ## The problem I actually lived
 

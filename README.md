@@ -1,18 +1,22 @@
 # Plumb
 
-An approval-queue console for changes an AI proposes but a human decides. The tools that
-detect documentation drift all stop at a report, and a report has no state. Plumb makes it a
-queue with state (pending, approved, rejected): a change you can act on is governed, a change
-you can only read is not.
+The approval layer between an AI agent and the world. An agent proposes actions; a human
+approves, edits, or rejects each one; and how much runs unattended is a policy you can see and
+move. Nothing an agent proposes takes effect until a person decides it should.
 
 ![Plumb's review queue: a confidence-and-severity triage with a policy slider that sets the auto-approve line](docs/plumb-hero.png)
+
+This demo wires Plumb to a documentation agent that reviews design-system docs and proposes
+fixes, but the queue is the point, not the docs. The same pattern holds for any agent that
+acts: a proposal has state (pending, approved, rejected), and state is what makes an action
+reviewable instead of just executed.
 
 The repo is named **earned autonomy** after the idea it proves: autonomy is earned one action
 at a time, not granted by default.
 
-**Why "Plumb":** a plumb bob shows whether a wall is truly vertical. Plumb does that for docs.
-It measures each source against the source of truth and flags what's off. (Said like the
-fruit, "plum.")
+**Why "Plumb":** a plumb bob is the weighted string that shows a structure is true. Plumb is
+the check between an agent and the world, where every action is measured against a human's
+judgment before it takes effect. (Said like the fruit, "plum.")
 
 ## Why it exists
 
