@@ -1,8 +1,10 @@
-# Plumb
+# <img src="ui/src/app/icon.svg" width="28" alt="" align="top"> Plumb
 
 The approval layer between an AI agent and the world. An agent proposes actions; a human
 approves, edits, or rejects each one; and how much runs unattended is a policy you can see and
 move. Nothing an agent proposes takes effect until a person decides it should.
+
+![Animated demo: approving, skipping, and confirming flags in Plumb's review queue, with friction scaling to risk](docs/plumb-demo.gif)
 
 ![Plumb's review queue: a confidence-and-severity triage with a policy slider that sets the auto-approve line](docs/plumb-hero.png)
 
