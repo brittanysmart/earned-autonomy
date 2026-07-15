@@ -44,8 +44,8 @@ function AutonomyPolicy({
         aria-label="Auto-approve confidence line"
       />
       <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground">
-        <span>50% · more runs on its own</span>
-        <span>100% · everything comes to you</span>
+        <span>50% · Plumb fixes more without asking</span>
+        <span>100% · Plumb always asks first</span>
       </div>
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
         At this line, {autoEligible} of {pending.length} pending would run on their own.{" "}
@@ -101,6 +101,9 @@ export function ListQueue({
             const isSel = f.id === selected?.id;
             return (
               <li key={f.id}>
+                {/* No tooltip here on purpose: rows are for scanning/triage, and a
+                    popup on every hover gets in the way. The criterion explanation
+                    lives on the detail card's chip, where the decision happens. */}
                 <button
                   onClick={() => setSelectedId(f.id)}
                   className={cn(
@@ -124,6 +127,12 @@ export function ListQueue({
                     )}
                   </div>
                   <div className="mt-1 flex items-center gap-1.5 pl-4 text-xs text-muted-foreground">
+                    {/* The dot's color alone can't carry severity (WCAG 1.4.1) —
+                        this word is the accessible channel, the dot reinforces it. */}
+                    <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide">
+                      {f.severity}
+                    </span>
+                    <span aria-hidden>·</span>
                     <span className="truncate font-mono">{f.source.split("/")[0]}</span>
                     {f.false_positive && (
                       <span className="shrink-0 rounded bg-plum/10 px-1 text-[10px] font-medium text-plum">

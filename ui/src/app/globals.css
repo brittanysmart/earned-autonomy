@@ -99,41 +99,51 @@
   --sidebar-ring: #7f9a4c;
 }
 
+/*
+ * Dark mode: the portfolio site's dark surfaces (surface #0E1014, ink
+ * #ECEEF1, muted #98A0AC, line #24282F) carrying Plumb's own meaning system —
+ * green = the action a human takes, plum = the brand mark and the "may be
+ * wrong" signal, sage = focus. Deliberately NOT the site's brass accent: the
+ * surfaces make screenshots sit seamlessly on the portfolio while the accents
+ * keep Plumb reading as its own product. Every text/background pair here
+ * clears WCAG 4.5:1 — checked programmatically, don't eyeball edits to these.
+ */
 .dark {
-  --background: #201d1a;
-  --foreground: #ece8e0;
-  --card: #2a2621;
-  --card-foreground: #ece8e0;
-  --popover: #2a2621;
-  --popover-foreground: #ece8e0;
+  color-scheme: dark;
+  --background: #0e1014;
+  --foreground: #eceef1;
+  --card: #14171c;
+  --card-foreground: #eceef1;
+  --popover: #171b21;
+  --popover-foreground: #eceef1;
   --primary: #8fb15a;
-  --primary-foreground: #1a1712;
-  --secondary: #33302a;
-  --secondary-foreground: #ece8e0;
-  --muted: #33302a;
-  --muted-foreground: #a39e92;
-  --accent: #362b31;
-  --accent-foreground: #d99cc0;
-  --destructive: #d0654a;
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --primary-foreground: #0e1014;
+  --secondary: #1b2026;
+  --secondary-foreground: #eceef1;
+  --muted: #1a1f26;
+  --muted-foreground: #98a0ac;
+  --accent: #262028;
+  --accent-foreground: #d9a3c2;
+  --destructive: #ef7365;
+  --border: #24282f;
+  --input: #24282f;
   --ring: #9fb86e;
-  --plum: #cf8fb2;
+  --plum: #d9a3c2;
   --sage: #9fb86e;
-  --caution: #d1a24e;
-  --caution-foreground: #e8c78a;
+  --caution: #e6c069;
+  --caution-foreground: #e6c069;
   --chart-1: #8fb15a;
   --chart-2: #9fb86e;
-  --chart-3: #d1a24e;
-  --chart-4: #cf8fb2;
-  --chart-5: #a39e92;
-  --sidebar: #2a2621;
-  --sidebar-foreground: #ece8e0;
+  --chart-3: #e6c069;
+  --chart-4: #d9a3c2;
+  --chart-5: #98a0ac;
+  --sidebar: #14171c;
+  --sidebar-foreground: #eceef1;
   --sidebar-primary: #8fb15a;
-  --sidebar-primary-foreground: #1a1712;
-  --sidebar-accent: #362b31;
-  --sidebar-accent-foreground: #d99cc0;
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-primary-foreground: #0e1014;
+  --sidebar-accent: #262028;
+  --sidebar-accent-foreground: #d9a3c2;
+  --sidebar-border: #24282f;
   --sidebar-ring: #9fb86e;
 }
 
@@ -146,6 +156,13 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Accessibility floor: every focusable element shows focus. Components with
+     their own focus-visible treatment (shadcn buttons, the flag card, the
+     slider) opt out via outline-none and keep their ring instead. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
   /* Quality floor, unannounced: honor reduced-motion everywhere rather than
      per-component. Kills the settle/zoom animations for anyone who asked the
@@ -190,6 +207,11 @@ input[type="range"].plumb-slider::-moz-range-thumb {
   background: var(--primary);
   border: 3px solid var(--card);
   cursor: pointer;
+}
+/* On the dark surface the border color all but vanishes (~1.2:1); this track
+   gray holds 3:1 against the card so the control reads without the thumb. */
+.dark input[type="range"].plumb-slider {
+  background: #616c7b;
 }
 input[type="range"].plumb-slider:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 55%, transparent);

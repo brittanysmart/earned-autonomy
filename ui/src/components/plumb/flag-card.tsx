@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -166,19 +167,34 @@ export function FlagCard({
       {/* Meta row: what, where, how sure, how much blast radius */}
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
         <span className="font-mono font-medium text-foreground">{flag.component}</span>
-        <span
-          className="rounded-full bg-accent px-2 py-0.5 font-medium text-accent-foreground"
-          title={criterion.title}
-        >
-          {criterion.label}
-        </span>
-        <span className="text-muted-foreground" title="Blast radius: harm if left unfixed">
-          {SEVERITY_LABEL[flag.severity]}
-        </span>
+        {/* tabIndex on the trigger spans so keyboard users can reach the
+            explanations the old title= attributes kept hover-only. */}
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <span
+                tabIndex={0}
+                className="rounded-full bg-accent px-2 py-0.5 font-medium text-accent-foreground"
+              />
+            }
+          >
+            {criterion.label}
+          </TooltipTrigger>
+          <TooltipContent>{criterion.title}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger render={<span tabIndex={0} className="text-muted-foreground" />}>
+            {SEVERITY_LABEL[flag.severity]}
+          </TooltipTrigger>
+          <TooltipContent>Blast radius: harm if left unfixed</TooltipContent>
+        </Tooltip>
         <span aria-hidden className="text-border">·</span>
-        <span className={conf.className} title="How sure Plumb is this finding is correct">
-          {conf.label} · {flag.confidence}
-        </span>
+        <Tooltip>
+          <TooltipTrigger render={<span tabIndex={0} className={conf.className} />}>
+            {conf.label} · {flag.confidence}
+          </TooltipTrigger>
+          <TooltipContent>How sure Plumb is this finding is correct</TooltipContent>
+        </Tooltip>
       </div>
 
       <h3 className="mt-3 text-lg font-semibold leading-snug tracking-tight text-foreground">
