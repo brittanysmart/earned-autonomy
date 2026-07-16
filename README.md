@@ -25,6 +25,10 @@
   <img src="docs/plumb-demo.gif" width="720" alt="Animated demo: a flag approved instantly at high confidence, a labeled false positive skipped, a below-threshold flag asking for confirmation, and a high-severity change requiring a deliberate acknowledgement before approval.">
 </p>
 
+<!-- Sharp click-to-play version: drag docs/plumb-demo.mp4 into this file in the
+     GitHub web editor, right below this comment, and GitHub will host it as an
+     inline player. Committed video files don't render as players, verified. -->
+
 ## The approval layer between an AI agent and the world
 
 An agent proposes actions; a human approves, edits, or rejects each one; and how much runs
