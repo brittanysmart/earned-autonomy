@@ -1,12 +1,35 @@
-# <img src="ui/src/app/icon.svg" width="28" alt="" align="top"> Plumb
+<p align="center">
+  <img src="ui/src/app/icon.svg" width="90" alt="">
+</p>
 
-The approval layer between an AI agent and the world. An agent proposes actions; a human
-approves, edits, or rejects each one; and how much runs unattended is a policy you can see and
-move. Nothing an agent proposes takes effect until a person decides it should.
+<h1 align="center">Plumb</h1>
 
-![Animated demo: approving, skipping, and confirming flags in Plumb's review queue, with friction scaling to risk](docs/plumb-demo.gif)
+<p align="center"><em>An agent proposes. A person decides. Nothing runs until they do.</em></p>
 
-![Plumb's review queue: a confidence-and-severity triage with a policy slider that sets the auto-approve line](docs/plumb-hero.png)
+<p align="center">
+  <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-24282F">
+  <img alt="Runs fully local" src="https://img.shields.io/badge/runs-fully%20local-8FB15A">
+  <img alt="Next.js + shadcn/ui" src="https://img.shields.io/badge/ui-Next.js%20%2B%20shadcn%2Fui-24282F">
+  <img alt="Python + Ollama" src="https://img.shields.io/badge/scoring-Python%20%2B%20Ollama-24282F">
+</p>
+
+<p align="center">
+  <strong>Under 90 confidence, a human decides. High risk, a human decides.<br>
+  One false positive, kept on purpose.</strong><br>
+  Those three rules are the product. The <a href="docs/case-study.md">case study</a> explains why.
+</p>
+
+---
+
+<p align="center">
+  <img src="docs/plumb-demo.gif" width="720" alt="Animated demo: a flag approved instantly at high confidence, a labeled false positive skipped, a below-threshold flag asking for confirmation, and a high-severity change requiring a deliberate acknowledgement before approval.">
+</p>
+
+## The approval layer between an AI agent and the world
+
+An agent proposes actions; a human approves, edits, or rejects each one; and how much runs
+unattended is a policy you can see and move. Nothing an agent proposes takes effect until a
+person decides it should.
 
 This demo wires Plumb to a documentation agent that reviews design-system docs and proposes
 fixes, but the queue is the point, not the docs. The same pattern holds for any agent that
