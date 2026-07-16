@@ -16,7 +16,7 @@ I kept thinking about that question as AI agents started editing codebases. An a
 
 ## Why the existing tools stop short
 
-I researched the landscape before building anything. storysync reads tokens and pushes them to Figma variables. ui-drift scans React for hardcoded values and scores health. Figma Code Connect opens a pull request when a variable changes. Each handles the mechanics of synchronization well.
+The synchronization tools already exist, and they stop one step short of the hard part. storysync reads tokens and pushes them to Figma variables. ui-drift scans React for hardcoded values and scores health. Figma Code Connect opens a pull request when a variable changes. Each handles the mechanics of synchronization well.
 
 None of them decide. They all output a report, and a report is stateless: it tells you what changed and then it is your problem. A queue has state (pending, approved, rejected), and state is what makes a change reviewable instead of merely visible. That gap, who owns the decision, is the governance layer teams skip, because no tool builds it for them.
 
@@ -37,6 +37,42 @@ The reviewer works in whichever mode fits the moment: one flag at a time when th
 One flag in the demo is wrong, and I left it there, labeled. The model flagged a variant called "default" as not matching the official "default." Same name. It had read the human-readable description sitting next to the name as if the name itself had changed.
 
 I kept it because a queue that hides its own mistakes is worse than one that shows them. A reviewer who never sees a false positive learns to trust every flag, and a reviewer who trusts every flag is a rubber stamp, which destroys the exact governance layer the tool exists to provide. Precision matters more than recall in a human-in-the-loop system, because the scarce resource is reviewer attention, not detection.
+
+## How it got here
+
+The first version of this project would not survive its own review queue. Its scorer was a
+set of regex checks, and its "confidence" numbers traced back to trigger phrases I had
+written into the fixture docs myself. The evidence looked planted because it was.
+
+Fixing that took two documented rounds (issues #1 and #2 in the repo). The staged fixtures
+became real snapshots of three live doc sites, which promptly surfaced a genuine drift I
+had not planted: the official shadcn/ui Badge had grown two variants the copies never
+picked up. Then the regex scorer became a real local model scoring through tool calls,
+which is what made the governance question real. A regex cannot be wrong in an interesting
+way; a model can, and now the queue had something worth reviewing.
+
+The UI went through the same loop. An earlier dark violet design and a brass accent both
+made it to main, got measured, and got reverted; the contrast checks that killed the brass are
+programmatic, not taste. What survived every round is the one line the model cannot move.
+
+## How I would know it works
+
+Plumb is a demo, so these numbers are designed rather than collected. But a review queue
+that cannot say what "working" means is just a prettier report, so the instrument panel is
+part of the design. In production I would watch four things:
+
+- **Precision, not recall.** The share of flags a reviewer approves without edits. Every
+  false positive spends the one budget the system runs on: reviewer attention.
+- **Decision latency.** Time from flag to decision, split by severity. If high-severity
+  flags sit longer than low ones, the queue is triaging correctly. If everything sits, the
+  queue has become homework.
+- **The rubber-stamp signal.** Streaks of fast, uniform approvals. A reviewer who approves
+  twenty flags in a minute has stopped reviewing, and the system should notice before an
+  incident does. This is why the labeled false positive stays in the demo: the metric and
+  the design decision are the same idea.
+- **Threshold calibration.** Outcomes in the 80 to 90 confidence band, right below the
+  auto-approve line. If humans approve nearly everything there unchanged, the line earns
+  its way down; if they keep catching real problems, it stays. Only a person moves it.
 
 ## What I would build next
 
