@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, X } from "lucide-react";
+import { Check, Sprout, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Flag, Severity } from "@/lib/flags";
 import { criterionInfo, runsOnItsOwn } from "@/lib/plumb";
@@ -33,16 +33,29 @@ function AutonomyPolicy({
         <span className="font-semibold text-primary tabular-nums">{threshold}%</span> sure and the
         risk is low.
       </p>
-      <input
-        type="range"
-        min={50}
-        max={100}
-        step={5}
-        value={threshold}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="plumb-slider mt-4 w-full"
-        aria-label="Auto-approve confidence line"
-      />
+      {/* Value bubble rides the thumb (Material's "value label" pattern): eyes
+          on the handle shouldn't have to travel to learn what it's set to.
+          Native thumb is 20px wide, so its center tracks pct% of (width - 20px)
+          plus half a thumb — hence the calc offset. */}
+      <div className="relative mt-9">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-7 -translate-x-1/2 rounded-md bg-primary px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-primary-foreground"
+          style={{ left: `calc(${((threshold - 50) / 50) * 100}% + ${10 - ((threshold - 50) / 50) * 20}px)` }}
+        >
+          {threshold}%
+        </div>
+        <input
+          type="range"
+          min={50}
+          max={100}
+          step={5}
+          value={threshold}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="plumb-slider w-full"
+          aria-label="Auto-approve confidence line"
+        />
+      </div>
       <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground">
         <span>50% · Plumb fixes more without asking</span>
         <span>100% · Plumb always asks first</span>
@@ -77,6 +90,8 @@ export function ListQueue({
 
   const pending = flags.filter((f) => f.status === "pending").length;
   const decided = flags.length - pending;
+  const approved = flags.filter((f) => f.status === "approved").length;
+  const skipped = flags.filter((f) => f.status === "rejected").length;
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-5 px-6 py-8">
@@ -91,7 +106,25 @@ export function ListQueue({
         </span>
       </div>
 
-      <AutonomyPolicy threshold={threshold} onChange={setThreshold} flags={flags} />
+      {/* A policy preview over zero pending flags is meaningless, so the queue's
+          end gets a real landing instead of "0 of 0 pending" under a slider. */}
+      {pending === 0 && flags.length > 0 ? (
+        <div className="flex items-start gap-4 rounded-2xl border border-primary/40 bg-card p-6 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent">
+            <Sprout className="size-6 text-plum" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight">All done.</h2>
+            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              You reviewed everything: {approved} approved, {skipped} skipped. For the ones you
+              approved, this demo shows the pull request Plumb would open. Your team merges from
+              there.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <AutonomyPolicy threshold={threshold} onChange={setThreshold} flags={flags} />
+      )}
 
       <div className="grid gap-5 md:grid-cols-[300px_1fr]">
         {/* Left: triage list */}

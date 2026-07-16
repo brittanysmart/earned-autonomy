@@ -157,6 +157,13 @@
   html {
     @apply font-sans;
   }
+  /* Web convention over Tailwind v4's platform default: everything clickable
+     shows the hand, matching the links and the slider thumb, so the cursor
+     never sends mixed signals about what is interactive. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
   /* Accessibility floor: every focusable element shows focus. Components with
      their own focus-visible treatment (shadcn buttons, the flag card, the
      slider) opt out via outline-none and keep their ring instead. */
