@@ -379,12 +379,14 @@ export function FlagCard({
           </AlertDialogHeader>
           <DiffView before={flag.patch.before} after={note} file={flag.patch.file} />
           {friction === "deliberate" && (
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-start gap-2.5 text-sm">
+              {/* mt-0.5 seats the box on the first line's cap height — centered
+                  against wrapped text it floats between lines and reads detached */}
               <input
                 type="checkbox"
                 checked={ack}
                 onChange={(e) => setAck(e.target.checked)}
-                className="size-4 accent-[var(--primary)]"
+                className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]"
               />
               I&apos;ve read the change above and take responsibility for it.
             </label>
