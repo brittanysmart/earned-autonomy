@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-07-10T19:15:22.952333+00:00",
+  "source_count": 3,
+  "flag_count": 4,
+  "governance_note": "Every flag Plumb raises is something it noticed, not something it did. Confidence under 90 means a human has to look. No exceptions.",
+  "sources": [
+    {
+      "source": "shadcn.rails-components.com/docs/components/badge",
+      "authority": "unofficial_port",
+      "last_fetched": "2026-07-05",
+      "owner": "No owner declared",
+      "role": "mirror-rails",
+      "flag_count": 1
+    },
+    {
+      "source": "shadcn.io/ui/badge",
+      "authority": "unofficial_mirror",
+      "last_fetched": "2026-07-05",
+      "owner": "No owner declared",
+      "role": "mirror-shadcnio",
+      "flag_count": 1
+    },
+    {
+      "source": "ui.shadcn.com/docs/components/badge",
+      "authority": "official",
+      "last_fetched": "2026-07-05",
+      "owner": "shadcn \u00b7 upstream",
+      "role": "official",
+      "flag_count": 1
+    }
+  ],
+  "flags": [
+    {
+      "id": "badge-shadcn.rails-components.com/docs/components/badge-terminology_consistency",
+      "component": "badge",
+      "source": "shadcn.rails-components.com/docs/components/badge",
+      "criterion": "terminology_consistency",
+      "severity": "medium",
+      "confidence": 95,
+      "summary": "The document for the Badge component in the Rails port is missing the 'link' variant, which is present in the official documentation.",
+      "evidence": "\"ghost\" is listed as a variant but \"link\" is not mentioned, even though it's part of the official set.",
+      "proposed_action": "Add the 'link' variant to the list of available variants for the Badge component.",
+      "plain": "Include 'link' in the list of badge variants.",
+      "patch": {
+        "file": "shadcn.rails-components.com/docs/components/badge",
+        "before": "",
+        "after": "\"ghost\" | \"link\""
+      },
+      "requires_human_review": false,
+      "false_positive": false,
+      "false_positive_note": "",
+      "illustrative": false,
+      "illustrative_note": "",
+      "status": "pending"
+    },
+    {
+      "id": "badge-shadcn.io/ui/badge-terminology_consistency",
+      "component": "badge",
+      "source": "shadcn.io/ui/badge",
+      "criterion": "terminology_consistency",
+      "severity": "medium",
+      "confidence": 85,
+      "summary": "The document uses 'default' as a variant name, which differs from the official 'default' variant in the official documentation.",
+      "evidence": "'- default \u2013 primary information and active states'",
+      "proposed_action": "Align with the official terminology by using 'default' instead of 'default \u2013 primary information and active states'.",
+      "plain": "Use 'default' as the variant name, not 'default \u2013 primary information and active states'.",
+      "patch": {
+        "file": "shadcn.io/ui/badge",
+        "before": "- default \u2013 primary information and active states",
+        "after": "- default"
+      },
+      "requires_human_review": true,
+      "false_positive": true,
+      "false_positive_note": "False alarm, kept on purpose. This flag says the \"default\" variant doesn't match the official \"default\" variant. Same name. What tripped the scorer is that the mirror writes a short description after the name (\"default \u2013 primary information and active states\"), and it compared that whole line to the bare official name. It flagged a variant that was never wrong. Real finding, real miss, kept visible because a queue that hides its own mistakes teaches you to stop reading the evidence.",
+      "illustrative": false,
+      "illustrative_note": "",
+      "status": "pending"
+    },
+    {
+      "id": "badge-ui.shadcn.com/docs/components/badge-judgment_boundaries",
+      "component": "badge",
+      "source": "ui.shadcn.com/docs/components/badge",
+      "criterion": "judgment_boundaries",
+      "severity": "medium",
+      "confidence": 85,
+      "summary": "The official documentation for Badge lacks guidance on when and why to use each variant.",
+      "evidence": "\"Available in both Base UI and Radix UI variants.\" - This statement does not explain the rationale or appropriate usage scenarios for these variants.",
+      "proposed_action": "Add a section explaining the intended use cases for each variant.",
+      "plain": "Explain when to use default, secondary, destructive, outline, ghost, and link badges.",
+      "patch": {
+        "file": "ui.shadcn.com/docs/components/badge",
+        "before": "",
+        "after": "- Default: Use for standard informational badges.\n- Secondary: For less critical information or actions.\n- Destructive: To indicate danger or negative outcomes.\n- Outline: For a more subtle appearance.\n- Ghost: To blend into the background.\n- Link: For interactive elements styled as badges."
+      },
+      "requires_human_review": true,
+      "false_positive": false,
+      "false_positive_note": "",
+      "illustrative": false,
+      "illustrative_note": "",
+      "status": "pending"
+    },
+    {
+      "id": "badge-DEMO-judgment_boundaries-high",
+      "component": "badge",
+      "source": "ui.shadcn.com/docs/components/badge",
+      "criterion": "judgment_boundaries",
+      "severity": "high",
+      "confidence": 68,
+      "summary": "An example renders Badge as a clickable control, but Badge is non-interactive.",
+      "evidence": "The docs show Badge used inside an interactive pattern without stating that Badge is presentational. A reader could ship it as a button and break keyboard and screen-reader access for every consumer who copies the example.",
+      "proposed_action": "Add a 'When not to use' note: Badge is non-interactive; for a clickable state use Button. Update any example that implies otherwise.",
+      "plain": "Say plainly that Badge isn't clickable, and point people to Button when they need that.",
+      "patch": {
+        "file": "ui.shadcn.com/docs/components/badge",
+        "before": "",
+        "after": "## When not to use\n\nBadge is non-interactive. For a clickable state, use a `Button`."
+      },
+      "requires_human_review": true,
+      "false_positive": false,
+      "false_positive_note": "",
+      "illustrative": true,
+      "illustrative_note": "Authored, not from the model. The three flags above came from a local model reading the actual docs; that run produced no high-severity finding, so this one is hand-written to show how Plumb treats a high-blast-radius change. A high-severity flag stays with a human at any autonomy setting and needs a deliberate confirmation to approve. Only this flag's wording is authored; the decision flow around it is the real thing.",
+      "status": "pending"
+    }
+  ]
+}

@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Flag, Source } from "@/lib/flags";
-import { recordDecision } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { GuidedQueue } from "@/components/plumb/guided-queue";
 import { ListQueue } from "@/components/plumb/list-queue";
@@ -76,14 +75,20 @@ export function PlumbApp({
     [sources],
   );
 
+  // Decisions live in this component and nowhere else. The demo is public, so
+  // a shared server-side log would mean one visitor's approvals greet the next
+  // one; a reset queue per visitor is both simpler and the honest default.
   async function handleDecide(
     id: string,
     decision: "approved" | "rejected",
-    note: string,
   ): Promise<string> {
-    const entry = await recordDecision(id, decision, note);
-    setFlags((prev) => prev.map((f) => (f.id === id ? { ...f, status: entry.decision } : f)));
-    return entry.decided_at;
+    setFlags((prev) => prev.map((f) => (f.id === id ? { ...f, status: decision } : f)));
+    return new Date().toISOString();
+  }
+
+  function handleStartOver() {
+    setFlags(initialFlags);
+    setScreen("start");
   }
 
   return (
@@ -127,6 +132,7 @@ export function PlumbApp({
               sourceOfTruth={sourceOfTruth}
               onDecide={handleDecide}
               onSeeAll={() => setMode("list")}
+              onStartOver={handleStartOver}
             />
           ) : (
             <ListQueue flags={flags} sourceOfTruth={sourceOfTruth} onDecide={handleDecide} />

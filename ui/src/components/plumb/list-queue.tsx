@@ -78,7 +78,7 @@ export function ListQueue({
 }: {
   flags: Flag[];
   sourceOfTruth: string | null;
-  onDecide: (id: string, decision: "approved" | "rejected", note: string) => Promise<string>;
+  onDecide: (id: string, decision: "approved" | "rejected") => Promise<string>;
 }) {
   const [threshold, setThreshold] = useState(90);
   const [selectedId, setSelectedId] = useState<string>(flags[0]?.id ?? "");

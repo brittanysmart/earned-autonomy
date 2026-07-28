@@ -1,16 +1,13 @@
 import { PlumbApp } from "@/components/plumb/plumb-app";
-import { applyDecisions, loadDecisions, loadFlagsFile } from "@/lib/flags";
+import { loadFlagsFile } from "@/lib/flags";
 
-export const dynamic = "force-dynamic";
-
-export default async function Home() {
-  const [flagsFile, decisions] = await Promise.all([loadFlagsFile(), loadDecisions()]);
-  const flags = applyDecisions(flagsFile.flags, decisions);
+export default function Home() {
+  const flagsFile = loadFlagsFile();
 
   return (
     <PlumbApp
       sources={flagsFile.sources}
-      flags={flags}
+      flags={flagsFile.flags}
       governanceNote={flagsFile.governance_note}
     />
   );

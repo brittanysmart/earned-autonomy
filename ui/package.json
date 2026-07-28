@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "../.venv/bin/python3 ../audit.py",
+    "predev": "../.venv/bin/python3 ../audit.py && npm run sync-flags",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync-flags": "cp ../output/flags.json src/data/flags.json"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

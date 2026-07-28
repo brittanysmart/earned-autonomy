@@ -12,11 +12,13 @@ export function GuidedQueue({
   sourceOfTruth,
   onDecide,
   onSeeAll,
+  onStartOver,
 }: {
   flags: Flag[];
   sourceOfTruth: string | null;
-  onDecide: (id: string, decision: "approved" | "rejected", note: string) => Promise<string>;
+  onDecide: (id: string, decision: "approved" | "rejected") => Promise<string>;
   onSeeAll: () => void;
+  onStartOver: () => void;
 }) {
   const [index, setIndex] = useState(0);
 
@@ -68,9 +70,12 @@ export function GuidedQueue({
             approved, this demo shows the pull request Plumb would open. Your team merges from
             there.
           </p>
-          <Button onClick={onSeeAll} className="mt-6">
-            See everything
-          </Button>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Button onClick={onSeeAll}>See everything</Button>
+            <Button variant="ghost" onClick={onStartOver}>
+              Start over
+            </Button>
+          </div>
         </div>
       ) : (
         <>

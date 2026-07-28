@@ -77,14 +77,14 @@ export function FlagCard({
   // The declared source of truth this drift is measured against, for the
   // "where this came from" context. Null when it isn't known.
   sourceOfTruth?: string | null;
-  onDecide: (id: string, decision: "approved" | "rejected", note: string) => Promise<string>;
+  onDecide: (id: string, decision: "approved" | "rejected") => Promise<string>;
   // Guided mode uses arrows to move between flags; list mode leaves it undefined.
   onFocusMove?: (dir: 1 | -1) => void;
   autofocus?: boolean;
 }) {
   // The editable text is the concrete change Plumb would write (patch.after),
   // not the prose recommendation — so the diff a reviewer edits is the same one
-  // shown before and after approval, and it's what recordDecision stores.
+  // shown before and after approval.
   const [note, setNote] = useState(flag.patch.after);
   const [editing, setEditing] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -104,7 +104,7 @@ export function FlagCard({
     setConfirmOpen(false);
     setAck(false);
     startTransition(async () => {
-      const at = await onDecide(flag.id, decision, note);
+      const at = await onDecide(flag.id, decision);
       setDecidedAt(at);
       setEditing(false);
       setReopening(false);
