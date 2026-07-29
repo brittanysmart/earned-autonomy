@@ -92,8 +92,9 @@ export const AUTHORITY_META: Record<
   { label: string; rank: number }
 > = {
   official: { label: "Source of truth", rank: 1 },
-  unofficial_mirror: { label: "Community mirror", rank: 2 },
-  unofficial_port: { label: "Community port", rank: 3 },
+  design_source: { label: "Design source", rank: 2 },
+  unofficial_mirror: { label: "Community mirror", rank: 3 },
+  unofficial_port: { label: "Community port", rank: 4 },
 };
 
 export function authorityInfo(authority: string) {

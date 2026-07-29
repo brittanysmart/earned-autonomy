@@ -173,7 +173,7 @@ function StartScreen({
         You&apos;ve got {count} {count === 1 ? "change" : "changes"} to review.
       </h1>
       <p className="mt-3.5 text-[15px] leading-relaxed text-muted-foreground">
-        Plumb compared your Badge docs against the official source and found a few that have
+        Plumb compared your Badge docs and Figma library against the official source and found a few that have
         drifted out of date. It wants to fix them, but it won&apos;t change anything until you say
         yes. You can go through them one at a time, or see them all at once.
       </p>

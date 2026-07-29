@@ -2,10 +2,10 @@
 """
 Design System Knowledge Audit — agent core.
 
-Reads real snapshot docs for shadcn/ui components (official + unofficial mirrors) and asks
-a local model to score each source against four governance criteria (judgment boundaries,
-terminology consistency, staleness/drift, retrievability), emitting proposed flags in the
-exact shape the Approval Queue UI consumes.
+Reads real snapshot docs for shadcn/ui components (official docs, unofficial mirrors, and a
+Figma design source) and asks a local model to score each source against four governance
+criteria (judgment boundaries, terminology consistency, staleness/drift, retrievability),
+emitting proposed flags in the exact shape the Approval Queue UI consumes.
 
 This is intentionally NOT auto-publishing anything. Every flag below is a *proposed* action
 with a model-stated confidence and reasoning. The 90%-confidence human-review threshold is a
@@ -81,8 +81,8 @@ CRITERIA = {
 SYSTEM_PROMPT = (
     "You are auditing documentation sources for a design system component, one source at a "
     "time. You will be given metadata about the source (which component, whether it's the "
-    "official docs or an unofficial mirror/port, and the source URL) and the document's "
-    "full text.\n\n"
+    "official docs, an unofficial mirror/port, or a design tool source (a Figma component "
+    "set exported as text), and the source URL) and the document's full text.\n\n"
     "Evaluate the document against these four criteria:\n\n"
     + "\n".join(f"- {key}: {desc}" for key, desc in CRITERIA.items())
     + "\n\nFor each criterion where you find a genuine, specific issue, call propose_flag "
@@ -233,7 +233,8 @@ def score_doc(doc, official_reference=None):
     user_prompt = (
         f"Component: {doc['component']}\n"
         f"Source role: {doc['role']} (official = the design system's own docs; "
-        "unofficial_mirror/unofficial_port = a third-party copy)\n"
+        "unofficial_mirror/unofficial_port = a third-party copy; design-figma = the design "
+        "library's component set, exported from Figma)\n"
         f"Source URL: {doc['meta'].get('source', 'unknown')}\n\n"
         f"{reference_note}\n\n"
         f"Document text:\n{doc['body']}"

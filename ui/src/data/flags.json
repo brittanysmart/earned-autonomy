@@ -1,9 +1,17 @@
 {
-  "generated_at": "2026-07-10T19:15:22.952333+00:00",
-  "source_count": 3,
-  "flag_count": 4,
+  "generated_at": "2026-07-29T22:40:00.858009+00:00",
+  "source_count": 4,
+  "flag_count": 5,
   "governance_note": "Every flag Plumb raises is something it noticed, not something it did. Confidence under 90 means a human has to look. No exceptions.",
   "sources": [
+    {
+      "source": "www.figma.com/design/uM9ETSRz69A5tms3lKYHVQ",
+      "authority": "design_source",
+      "last_fetched": "2026-07-29",
+      "owner": "Design team - Figma library",
+      "role": "design-figma",
+      "flag_count": 1
+    },
     {
       "source": "shadcn.rails-components.com/docs/components/badge",
       "authority": "unofficial_port",
@@ -31,20 +39,43 @@
   ],
   "flags": [
     {
+      "id": "badge-www.figma.com/design/uM9ETSRz69A5tms3lKYHVQ-terminology_consistency",
+      "component": "badge",
+      "source": "www.figma.com/design/uM9ETSRz69A5tms3lKYHVQ",
+      "criterion": "terminology_consistency",
+      "severity": "medium",
+      "confidence": 85,
+      "summary": "The document uses 'VARIANT' for prop names and 'Options' column where the official docs use specific variant names.",
+      "evidence": "'Property | Type | Default | Options\n|----------|------|---------|---------\n| Variant | VARIANT | Default | Default, Secondary, Outline, Destructive\n| Size | VARIANT | sm | sm, md, lg\n| State | VARIANT | Default | Default, Hover'",
+      "proposed_action": "Replace 'VARIANT' with the specific variant names in the Options column.",
+      "plain": "Use the official variant names like 'default', 'secondary', etc. instead of 'VARIANT'.",
+      "patch": {
+        "file": "www.figma.com/design/uM9ETSRz69A5tms3lKYHVQ",
+        "before": "| Variant | VARIANT | Default | Default, Secondary, Outline, Destructive\n| Size | VARIANT | sm | sm, md, lg\n| State | VARIANT | Default | Default, Hover",
+        "after": "| Variant | default | Default | Default, secondary, outline, destructive\n| Size | sm | sm | sm, md, lg\n| State | default | Default | Default, hover"
+      },
+      "requires_human_review": true,
+      "false_positive": false,
+      "false_positive_note": "",
+      "illustrative": false,
+      "illustrative_note": "",
+      "status": "pending"
+    },
+    {
       "id": "badge-shadcn.rails-components.com/docs/components/badge-terminology_consistency",
       "component": "badge",
       "source": "shadcn.rails-components.com/docs/components/badge",
       "criterion": "terminology_consistency",
       "severity": "medium",
       "confidence": 95,
-      "summary": "The document for the Badge component in the Rails port is missing the 'link' variant, which is present in the official documentation.",
-      "evidence": "\"ghost\" is listed as a variant but \"link\" is not mentioned, even though it's part of the official set.",
-      "proposed_action": "Add the 'link' variant to the list of available variants for the Badge component.",
-      "plain": "Include 'link' in the list of badge variants.",
+      "summary": "The document for the Badge component in mirror-rails is missing the 'link' variant and incorrectly names the 'default' variant as just 'Badge'.",
+      "evidence": "\"- default (Badge)\" is required. \"- secondary\" is optional and selects the visual style.",
+      "proposed_action": "Add the 'link' variant and correct the naming of the 'default' variant to match the official documentation.",
+      "plain": "Fix the Badge component's variants to include 'link' and rename 'default' to just 'default'.",
       "patch": {
         "file": "shadcn.rails-components.com/docs/components/badge",
-        "before": "",
-        "after": "\"ghost\" | \"link\""
+        "before": "- default (Badge)",
+        "after": "- default"
       },
       "requires_human_review": false,
       "false_positive": false,
@@ -60,14 +91,14 @@
       "criterion": "terminology_consistency",
       "severity": "medium",
       "confidence": 85,
-      "summary": "The document uses 'default' as a variant name, which differs from the official 'default' variant in the official documentation.",
+      "summary": "The document uses 'default' as a variant name, which conflicts with the official 'ghost' variant.",
       "evidence": "'- default \u2013 primary information and active states'",
-      "proposed_action": "Align with the official terminology by using 'default' instead of 'default \u2013 primary information and active states'.",
-      "plain": "Use 'default' as the variant name, not 'default \u2013 primary information and active states'.",
+      "proposed_action": "Rename the 'default' variant to match the official documentation.",
+      "plain": "Change 'default' to 'primary' in the variants list.",
       "patch": {
         "file": "shadcn.io/ui/badge",
         "before": "- default \u2013 primary information and active states",
-        "after": "- default"
+        "after": "- primary \u2013 primary information and active states"
       },
       "requires_human_review": true,
       "false_positive": true,
@@ -90,7 +121,7 @@
       "patch": {
         "file": "ui.shadcn.com/docs/components/badge",
         "before": "",
-        "after": "- Default: Use for standard informational badges.\n- Secondary: For less critical information or actions.\n- Destructive: To indicate danger or negative outcomes.\n- Outline: For a more subtle appearance.\n- Ghost: To blend into the background.\n- Link: For interactive elements styled as badges."
+        "after": "- Default: Use for standard informational badges.\n- Secondary: For less critical information or actions.\n- Destructive: To indicate danger or negative outcomes.\n- Outline: For a more subtle appearance.\n- Ghost: For a minimalistic look, often used in dark themes.\n- Link: To create badge-styled links with custom behavior."
       },
       "requires_human_review": true,
       "false_positive": false,

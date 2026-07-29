@@ -56,6 +56,9 @@ gap was always found downstream by whoever trusted the docs most. That is a gove
 failure, not a tooling failure, and it is the same failure that happens when an AI agent edits
 a codebase without review: a change nobody decided to trust.
 
+Plumb now audits both sides of that original gap: the Storybook-style docs plus a real Figma
+component set, fetched through Figma's API and measured against the same official source.
+
 The tools that detect this kind of drift all stop at a report, and a report has no state.
 Plumb makes it a queue. Every finding is a proposal with a confidence score, not an action,
 and the model does not get to decide what counts as sure enough to skip a human: that
@@ -129,9 +132,22 @@ python3 audit.py
 ## How it's structured
 
 - **`audit.py`**: the scoring script. Reads `data/*.md`, writes `output/flags.json`.
-- **`data/`**: three real docs saved as snapshots, the official shadcn Badge page plus two
-  unofficial copies (shadcn.io and a Rails-components port). Real content from each source,
-  not authored fixtures. They are saved rather than fetched live; see Known limitations.
+- **`data/`**: four real docs saved as snapshots, the official shadcn Badge page, two
+  unofficial copies (shadcn.io and a Rails-components port), and a Figma component set. Real
+  content from each source, not authored fixtures. They are saved rather than fetched live at
+  audit time; see Known limitations.
+- **`fetch_figma.py`**: pulls a Badge component set from a Figma file (description, variants,
+  properties) into a `data/*.md` snapshot, using Figma's REST API. Run it yourself with a
+  personal access token when you want to refresh the Figma source:
+  ```
+  FIGMA_TOKEN=figd_... python3 fetch_figma.py <file_key>
+  ```
+  `<file_key>` is the id in a Figma file URL (`figma.com/design/<file_key>/...`). To point
+  this at your own kit, duplicate any shadcn/ui community kit from
+  [ui.shadcn.com/docs/figma](https://ui.shadcn.com/docs/figma) and generate a token under
+  Figma's account settings (scope: `file_content:read`). The demo's Figma source links to a
+  view-only duplicate; if you swap in your own private file, the Sources screen's link will
+  404 for other viewers.
 - **`output/`**: generated automatically, not checked into git. `flags.json` is the
   scorer's output. `decisions.json` is the human decision log the UI writes to, with an id,
   a decision, a note, and a timestamp for each entry.
@@ -144,8 +160,14 @@ python3 audit.py
 
 Worth stating plainly rather than hiding:
 
-- `audit.py` scores saved snapshot files, not documentation it fetches live. A real version
-  of this would connect to a live API or MCP source instead of static markdown files.
+- `audit.py` scores saved snapshot files, not documentation it fetches live at audit time.
+  The Figma source is pulled from a real API (`fetch_figma.py`), but as a snapshot you refresh
+  yourself, not a call `audit.py` makes on every run, so the deployed demo stays static and
+  never needs a token. A real version of this would fetch some or all sources live.
+- Figma's REST API can read a component set's description but can't write one; only the
+  Plugin API can. Approving a Figma-sourced flag reflects that: Plumb says the change would be
+  routed to the file's owner to apply by hand, not shown as a pull request like the other
+  sources.
 - Scoring runs on a local model through Ollama, so the scorer needs Ollama running, and the
   confidence numbers are the model's own judgment rather than a fixed formula. The one thing
   that is fixed is the review threshold in code, which the model never gets to move.

@@ -309,9 +309,9 @@ export function FlagCard({
                 )}
               </p>
               <p className="text-xs text-muted-foreground">
-                This demo shows the change Plumb would submit as a pull request for your team
-                to merge. It doesn&apos;t open a real PR, and nothing on the live doc changes
-                until a human merges it.
+                {flag.source.includes("figma.com")
+                  ? "Figma's API can read this component set but can't write its description, so this change can't be automated at all. Plumb would route the proposal to the file's owner to apply by hand in Figma."
+                  : "This demo shows the change Plumb would submit as a pull request for your team to merge. It doesn't open a real PR, and nothing on the live doc changes until a human merges it."}
               </p>
               <DiffView before={flag.patch.before} after={note} file={flag.patch.file} />
             </div>
